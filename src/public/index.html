@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signin</title>
+    <link rel="stylesheet" href="./css/index.css" />
+  </head>
+  <body>
+    <main class="container">
+      <div class="form-container">
+        <form id="signin-form">
+          <h2>SignIn</h2>
+          <div class="email">
+            <label for="email">Email</label> <br />
+            <input type="email" id="email" name="email" required />
+          </div>
+          <div class="pass">
+            <label for="password">Password</label> <br />
+            <input type="password" id="password" name="password" required />
+          </div>
+          <button type="submit">SignIn</button>
+          <p>Don't have an account? <a href="./signup.html">Signup</a></p>
+        </form>
+      </div>
+    </main>
+    <footer></footer>
+    <script>
+      document
+        .getElementById("signin-form")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+
+          const formData = new FormData(this);
+          const email = formData.get("email");
+          const password = formData.get("password");
+
+          try {
+            const response = await fetch("/api/auth/signin", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ email, password }),
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.message);
+            }
+
+            const responseData = await response.json();
+            const token = responseData.token;
+            sessionStorage.setItem("token", token);
+            window.location.href = "/todo.html";
+          } catch (error) {
+            console.error("Error:", error.message);
+            alert("Error signing in: " + error.message);
+          }
+        });
+    </script>
+  </body>
+</html>

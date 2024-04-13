@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo App</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css"
+      integrity="sha512-OQDNdI5rpnZ0BRhhJc+btbbtnxaj+LdQFeh0V9/igiEPDiWE2fG+ZsXl0JEH+bjXKPJ3zcXqNyP4/F/NegVdZg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      * {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        
+      }
+      body {
+        background-color:rgb(137, 225, 196);
+      }
+      .container {
+        max-width: 100%;
+        height: 100%;
+        margin: 0 3rem;
+        
+        padding: 20px;
+        
+      }
+
+      h1 {
+        text-align: center;
+      }
+      #todo-input, #edit-todo-input{
+        outline: none;
+        width: 200px;
+        padding: 0.5rem;
+        border: none;
+        border-bottom: 2px solid rgb(88, 88, 186);
+      }
+      .todo-item {
+        margin-bottom: 10px;
+        padding: 10px;
+        /* border: 1px solid #ccc; */
+        border-radius: 4px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .todo-item input[type="checkbox"] {
+        margin-right: 10px;
+      }
+
+      button {
+        background-color: rgb(88, 88, 186);
+        color: #fff;
+        border: none;
+        padding: 8px 16px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+      }
+
+      .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      #logout-btn:hover{
+        color: black;
+        font-size: 26px;
+        transition: font-size 200;
+      }
+      i{
+        color: rgb(84, 84, 84);
+        cursor: pointer;
+        font-size: 30px;
+      }
+      .delete {
+        color: red;
+        font-size: 18px;
+      }
+      #todo-form {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+      }
+      .check {
+        display: flex;
+      }
+      .table {
+        display: flex;
+        justify-content: space-between;
+        background-color: #c6c5c5;
+        padding: 1rem 1rem;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+      }
+      #edit{
+        color: rgb(88, 88, 186);
+        font-size: 18px;
+      }
+      .action{
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        gap: 2rem;
+      }
+      .tasks{
+        color: #343434;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Todo Task</h1>
+      <form id="todo-form">
+        <div>
+          <input type="text" id="todo-input" placeholder="Enter your task..." />
+          <button type="submit">Add Todo</button>
+        </div>
+        <i id="logout-btn" class="ri-logout-box-line"></i>
+      </form>
+      <div id="todo-list">
+        <div class="table">
+          <p>Tasks</p>
+          <p>Action</p>
+        </div>
+        <!-- Todo items will be dynamically added here -->
+      </div>
+      <div id="editModal" class="modal">
+        <div class="modal-content">
+          <span class="close" onclick="closeEditModal()">&times;</span>
+          <input type="text" id="edit-todo-input" />
+          <button id="update">Update</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      async function deleteTodoItem(_id) {
+        try {
+          const response = await fetch(`/api/todo/delete-todo/${_id}`, {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + sessionStorage.getItem("token"),
+            },
+          });
+          if (response.ok) {
+            const todoItem = document.getElementById(`todo-${_id}`);
+            if (todoItem) {
+              todoItem.remove();
+            }
+          } else {
+            const errorMessage = await response.text(); 
+            console.error("Failed to delete todo item:", errorMessage);
+          }
+        } catch (error) {
+          console.error("Error deleting todo item:", error);
+        }
+      }
+
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/signin";
+      } else {
+        const todoForm = document.getElementById("todo-form");
+        const todoInput = document.getElementById("todo-input");
+        const todoList = document.getElementById("todo-list");
+        const editModal = document.getElementById("editModal");
+        const editTodoInput = document.getElementById("edit-todo-input");
+        const updateBtn = document.getElementById("update");
+        const logoutBtn = document.getElementById("logout-btn");
+
+        logoutBtn.addEventListener("click", () => {
+          sessionStorage.removeItem("token");
+          window.location.href = "/signin";
+        });
+
+        // Function to create a new todo item with ID
+        function createTodoItem(todoId, todoText) {
+          const todoItem = document.createElement("div");
+          todoItem.classList.add("todo-item");
+          todoItem.id = `todo-${todoId}`;
+          todoItem.innerHTML = `
+          <div class="check">
+          <input type="checkbox" id="${todoId}" value = ${todoText} />
+          <p class="tasks">${todoText}</p>
+          </div>
+          <div class="action">
+          <i onclick="openEditModal('${todoId}', '${todoText}')" id="edit" class="ri-edit-line"></i>
+          <i onclick="deleteTodoItem('${todoId}')" class="ri-delete-bin-6-line delete"></i>
+          </div>
+          `;
+          return todoItem;
+        }
+
+        // Function to fetch all todos from the backend
+        async function fetchTodos() {
+          try {
+            const response = await fetch("api/todo/get-todo-list", {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + sessionStorage.getItem("token"),
+              },
+            });
+            const todos = await response.json();
+            todos.forEach((todo) => addTodoItem(todo._id, todo.title));
+          } catch (error) {
+            console.error("Error fetching todo:", error);
+          }
+        }
+
+        // Function to add a new todo item to the list
+        function addTodoItem(todoId, todoText) {
+          const todoItem = createTodoItem(todoId, todoText);
+          todoList.appendChild(todoItem);
+        }
+
+        // Function to handle form submission
+        async function handleSubmit(event) {
+          event.preventDefault();
+          const todoText = todoInput.value.trim();
+          if (todoText !== "") {
+            try {
+              const response = await fetch("api/todo/add-todo", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: "Bearer " + sessionStorage.getItem("token"),
+                },
+                body: JSON.stringify({ title: todoText }),
+              });
+              
+              const todo = await response.json();
+              addTodoItem(todo.id, todo.title);
+              todoInput.value = "";
+            } catch (error) {
+              console.error("Error creating todo:", error);
+            }
+          }
+        }
+
+        // Function to open the edit modal
+        function openEditModal(todoId, todoText) {
+          editTodoInput.value = todoText;
+          editModal.style.display = "block";
+          editModal.dataset.todoId = todoId;
+        }
+
+        // Function to close the edit modal
+        function closeEditModal() {
+          editModal.style.display = "none";
+        }
+
+        // Function to update the todo item
+        async function updateTodo() {
+          const todoId = editModal.dataset.todoId;
+          // console.log(todoId);
+          const todoText = editTodoInput.value.trim();
+          try {
+            const response = await fetch(`/api/todo/update-todo/${todoId}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + sessionStorage.getItem("token"),
+              },
+              body: JSON.stringify({ title: todoText }),
+            });
+            if (response.ok) {
+              closeEditModal();
+              const todo = await response.json();
+              console.log(todo);
+              window.location.reload();
+              createTodoItem(todo.todo._id,todo.todo.title);
+              // You can update the UI here if needed
+            } else {
+              console.error("Failed to update todo:", response.statusText);
+            }
+          } catch (error) {
+            console.error("Error updating todo:", error);
+          }
+        }
+
+        // Event listeners
+        todoForm.addEventListener("submit", handleSubmit);
+        updateBtn.addEventListener("click", () => {
+          updateTodo();
+        });
+        document.addEventListener("DOMContentLoaded", fetchTodos);
+      }
+    </script>
+  </body>
+</html>

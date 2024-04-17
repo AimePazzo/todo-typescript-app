@@ -24,7 +24,7 @@ app.use('/api/todo', todoRoutes);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Catch-all route to serve index.html
-app.get('*', (req, res:Response) => {
+app.get('*', (req:Request, res:Response) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
@@ -41,3 +41,5 @@ const startServer = async () => {
 };
 
 startServer();
+
+export default app

@@ -1,8 +1,13 @@
 import { Request, Response} from 'express';
 import { TodoModel } from '../models/Todo';
+import { UserInterface } from '../interfaces/userInterface';
 
-// Get all todos
-export const getAllTodos = async (req:Request, res:Response) => {
+
+interface ExtendedRequest extends Request {
+  user?: UserInterface; // Make the 'user' property optional or initialize it with an appropriate type
+}
+// Get all Todo Items
+export const getAllTodos = async (req:ExtendedRequest, res:Response) => {
   try {
     type User = {
       userId: string;
@@ -15,9 +20,9 @@ export const getAllTodos = async (req:Request, res:Response) => {
   }
 };
 
-// Add a new todo
+// Add a new todo Item to the list
 
-export const addTodo = async (req: Request, res: Response) => {
+export const addTodo = async (req: ExtendedRequest, res: Response) => {
   try {
     type User = {
       userId: string;

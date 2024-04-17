@@ -1,29 +1,28 @@
-// middleware/authMiddleware.ts
 import { Request, Response, NextFunction } from 'express';
-import jwt,{JwtPayload} from 'jsonwebtoken';
-import asyncHandler from 'express-async-handler'
-import User from '../models/User';
-import { UserInterface } from '../interfaces/userInterface';
+import jwt, { JwtPayload } from 'jsonwebtoken';
+import { UserInterface } from '../interfaces/userInterface'; // Assuming you have a UserInterface defined
 
-
-export const authenticateToken =asyncHandler(async(req: Request, res: Response, next: NextFunction): Promise<void> => {
-  let token;
-  if (req?.headers?.authorization?.startsWith('Bearer')) {
-      token = req.headers.authorization.split(" ")[1];
-      try {
-          if (token) {
-              const decoded = jwt.verify(token, process.env.JWT_SECRET);
-              if(decoded) {
-              req.user = decoded as UserInterface;
-              next();
-              } else {
-              res.status(403).json({ message: 'Forbidden' });
-              }
-          }
-      } catch (error) {
-          throw new Error("Not Authorized token expired, please login again")
-      }
-  }else{
-      throw new Error('There is no token attached to header')
-  }
-});
+interface ExtendedRequest extends Request {
+    user?: UserInterface; 
+}
+export const authenticateToken = async (req: ExtendedRequest, res: Response, next: NextFunction) => {
+    let token;
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+        if (token) {
+            try {
+                if(process.env.JWT_SECRET){
+                    const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
+                req.user = decoded as UserInterface;
+                next();
+                }
+            } catch (error) {
+                throw new Error('Not Authorized! Token expired. Please login again.');
+            }
+        } else {
+            throw new Error('No token provided');
+        }
+    } else {
+        throw new Error('Not Authorized! No token provided');
+    }
+};

@@ -4,16 +4,21 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "test": "nyc mocha -require ts-node/register ./src/test/**.spec.ts --timeout 3000 --exit",
+    "coveralls": "nyc --reporter=lcov --reporter=text-lcov npm test | coveralls",
     "dev": "nodemon src/index.ts"
   },
   "keywords": [],
-  "author": "",
+  "author": "Aime Patrick",
   "license": "ISC",
   "dependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@types/jsonwebtoken": "^9.0.6",
     "bcrypt": "^5.1.0",
+    "chai-http": "^4.4.0",
     "connect-mongo": "^4.6.0",
     "cors": "^2.8.5",
+    "coveralls": "^3.1.1",
     "dotenv": "^16.0.3",
     "envalid": "^7.3.1",
     "express": "^4.18.2",
@@ -22,23 +27,27 @@
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^6.8.1",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "nyc": "^15.1.0",
+    "punycode": "^2.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@types/bcrypt": "^5.0.0",
+    "@types/chai": "^4.3.14",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/express-session": "^1.17.5",
     "@types/http-errors": "^2.0.1",
+    "@types/mocha": "^9.0.0",
     "@types/morgan": "^1.9.3",
-    "@typescript-eslint/eslint-plugin": "^5.47.0",
-    "@typescript-eslint/parser": "^5.47.0",
+    "chai": "^4.3.4",
     "eslint": "^8.57.0",
     "globals": "^15.0.0",
+    "mocha": "^9.1.3",
     "nodemon": "^3.1.0",
-    "ts-node": "^10.9.1",
-    "typescript": "^4.9.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^4.9.5",
     "typescript-eslint": "^7.6.0"
   }
 }

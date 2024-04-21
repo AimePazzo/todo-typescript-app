@@ -1,7 +1,8 @@
 import express from 'express';
-import  {signUp,signIn}  from '../controllers/authController';
+import authControllers from '../modules/user/controllers/authController'; 
 
-const router = express.Router();
-router.post('/signin',signIn);
-router.post('/signup',signUp);
-export default router;
+const authRouter = express.Router();
+authRouter.post('/login',authControllers.signIn);
+authRouter.post('/signup',authControllers.signUp);
+authRouter.delete('/delete/:id',authControllers.deleteUser);
+export default authRouter;

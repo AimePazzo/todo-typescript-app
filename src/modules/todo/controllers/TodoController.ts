@@ -1,9 +1,6 @@
 import { Request, Response } from 'express';
 import TodoRepository from '../repository/TodoRepository';
 
-
-
-
 interface ExtendedRequest extends Request {
   userId?: string;
 }
@@ -51,7 +48,6 @@ const updateTodo = async (req: Request, res: Response) => {
     const { title } = req.body;
     const id = req.params.id;
     const todoData = {id,title}
-    
     const data = await TodoRepository.updateTodo(todoData);
     if (data) {
       res.status(200).json({ message: 'Task updated successfully', data: data });

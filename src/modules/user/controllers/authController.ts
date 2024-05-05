@@ -38,14 +38,15 @@ const signIn = async (req: Request, res: Response): Promise<void> => {
     if (findUser) {
       const isMatch: boolean = await bcrypt.compare(password, findUser.password);
       if (isMatch) {
-        const token = jwt.sign({ id: findUser._id }, process.env.JWT_SECRET ||'', { expiresIn: '3h' });
+        const token = jwt.sign({ id: findUser._id }, process.env.JWT_SECRET ||'', { expiresIn: '2h' });
         res.status(200).json({ message:"Login Successful", user:findUser, token:token });
       } else {
         res.status(401).json({ message: 'Invalid credentials' });
       }
-      
+      return
     }
       res.status(401).json({ message: 'Please create an account 🔐' });
+      return
   } catch (error) {
     res.status(500).json({ message: 'Internal server error' });
   }

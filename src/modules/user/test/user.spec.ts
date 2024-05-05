@@ -16,6 +16,7 @@ describe('User test case', () => {
             const response = await router()
                 .post('/api/user/signup')
                 .send({
+                    // id: 'user_id',
                     username: "pazzo201",
                     email: "aime5@gmail.com",
                     password: hashedPassword

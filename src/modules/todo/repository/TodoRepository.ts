@@ -6,7 +6,7 @@ const postTodo = async (body: any) => {
 
 
 const getTodo = async (body: any) => {
-    return await TodoModel.find({userId:body});
+    return await TodoModel.find({ userId: body });
 }
 
 const getAllTodo = async () => {
@@ -17,14 +17,14 @@ const deleteTodo = async (body: any) => {
     return await TodoModel.findByIdAndDelete(body);
 }
 
-const updateTodo = async (body:any) => {
-    return await TodoModel.findByIdAndUpdate(body.id, 
+const updateTodo = async (body: any) => {
+    return await TodoModel.findByIdAndUpdate(body.id,
         {
-        title: body.title,
-    }, 
-    {
-        new: true,
-    });
+            title: body.title,
+        },
+        {
+            new: true,
+        });
 }
 
 
